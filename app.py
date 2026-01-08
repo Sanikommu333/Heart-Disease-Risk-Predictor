@@ -83,8 +83,7 @@ st.title("Heart Disease Risk Predictor")
 st.caption("AI-based Cardiovascular Risk Assessment System")
 
 st.info(
-    "Enter patient details, click 'Assess Risk', "
-    "and scroll down to view the results."
+    "Enter patient details, click 'Assess Risk', and scroll down to view the results."
 )
 
 # ===============================
@@ -130,7 +129,7 @@ with tab1:
             "active": 1 if active == "Yes" else 0
         }])
 
-        with st.spinner("Analyzing risk..."):
+        with st.spinner("Analyzing cardiovascular risk..."):
             X = prepare_features(patient_df)
             risk_prob = model.predict_proba(X)[0][1]
 
@@ -138,39 +137,81 @@ with tab1:
         st.write(f"Estimated Heart Disease Risk: {risk_prob * 100:.1f}%")
 
         if risk_prob >= 0.75:
-            st.error("High risk detected. Medical consultation advised.")
+            st.error("High cardiovascular risk detected. Medical consultation advised.")
         elif risk_prob >= 0.45:
-            st.warning("Moderate risk detected. Lifestyle changes recommended.")
+            st.warning("Moderate cardiovascular risk detected. Lifestyle changes recommended.")
         else:
             st.success("Low cardiovascular risk detected.")
 
-        st.caption("Open the Risk Analysis tab for explanation.")
+        st.caption("For detailed explanation and diet guidance, open the Risk Analysis tab.")
 
 # ===============================
-# TAB 2: RISK ANALYSIS
+# TAB 2: RISK ANALYSIS + DIET
 # ===============================
 with tab2:
     if st.session_state.predicted:
-        st.subheader("Why this risk was predicted")
+        st.subheader("Clinical Risk Interpretation")
 
-        bmi = X["bmi"].iloc[0]
-
-        reasons = []
-        if bmi >= 25:
-            reasons.append("Elevated BMI increases heart workload.")
+        st.markdown("### Blood Pressure")
         if ap_hi >= 140 or ap_lo >= 90:
-            reasons.append("High blood pressure strains blood vessels.")
-        if smoke == "Yes":
-            reasons.append("Smoking damages cardiovascular health.")
-        if active == "No":
-            reasons.append("Low physical activity weakens heart efficiency.")
-        if age >= 55:
-            reasons.append("Age increases cardiovascular vulnerability.")
+            st.write(
+                "- Blood pressure indicates hypertension.\n"
+                "- Chronic hypertension increases risk of heart attack and stroke."
+            )
+        else:
+            st.write(
+                "- Blood pressure is within acceptable limits."
+            )
 
-        for r in reasons:
-            st.write("- " + r)
+        st.markdown("### Body Mass Index (BMI)")
+        bmi = X["bmi"].iloc[0]
+        if bmi < 18.5:
+            st.write("- Underweight BMI may indicate nutritional imbalance.")
+        elif bmi < 25:
+            st.write("- Normal BMI associated with lower cardiovascular risk.")
+        elif bmi < 30:
+            st.write("- Overweight BMI increases cardiac workload.")
+        else:
+            st.write("- Obese BMI significantly increases heart disease risk.")
+
+        st.markdown("### Lifestyle Factors")
+        if smoke == "Yes":
+            st.write("- Smoking damages blood vessels and accelerates plaque buildup.")
+        if alco == "Yes":
+            st.write("- Alcohol consumption may increase blood pressure.")
+        if active == "No":
+            st.write("- Physical inactivity weakens cardiovascular efficiency.")
+
+        st.markdown("### Age Factor")
+        if age >= 55:
+            st.write("- Increasing age is a non-modifiable cardiovascular risk factor.")
+
+        st.markdown("### Diet Recommendations")
+
+        if risk_prob >= 0.45:
+            st.write(
+                "- Reduce salt intake to less than 2 grams per day.\n"
+                "- Increase intake of fruits, vegetables, and whole grains.\n"
+                "- Prefer lean proteins such as fish, legumes, and nuts.\n"
+                "- Avoid fried foods, processed snacks, and sugary beverages.\n"
+                "- Limit red meat and saturated fats."
+            )
+        else:
+            st.write(
+                "- Maintain a balanced diet rich in fruits and vegetables.\n"
+                "- Continue healthy eating habits to sustain low risk."
+            )
+
+        st.markdown("### Overall Summary")
+        if risk_prob >= 0.75:
+            st.error("Overall assessment indicates high cardiovascular risk.")
+        elif risk_prob >= 0.45:
+            st.warning("Overall assessment indicates moderate cardiovascular risk.")
+        else:
+            st.success("Overall assessment indicates low cardiovascular risk.")
+
     else:
-        st.info("Please assess risk first.")
+        st.info("Please complete the assessment in the Patient Details tab.")
 
 # ===============================
 # TAB 3: REPORT
@@ -185,7 +226,7 @@ with tab3:
 
         with open(pdf_path, "rb") as f:
             st.download_button(
-                "Download Clinical Report",
+                "Download Clinical PDF Report",
                 f,
                 file_name="CardioPredict_Report.pdf",
                 mime="application/pdf"
@@ -198,19 +239,20 @@ with tab3:
 # ===============================
 with tab4:
     st.subheader("Model Information")
-    st.write("""
-    - Dataset: Cardiovascular Disease Dataset (Kaggle)
-    - Records: ~70,000
-    - Model: XGBoost Classifier
-    - ROC-AUC: ~0.80
-    - Designed for screening and educational use
-    """)
+    st.write(
+        """
+        - Dataset: Cardiovascular Disease Dataset (Kaggle)
+        - Records: ~70,000
+        - Model: XGBoost Classifier
+        - ROC-AUC: Approximately 0.80
+        - Intended for screening and educational use only
+        """
+    )
 
 # ===============================
 # FOOTER
 # ===============================
 st.markdown("---")
 st.caption(
-    "Heart Disease Risk Predictor | Developed by "
-    "S. Vishnu Vardhan Reddy"
+    "Heart Disease Risk Predictor | Developed by S. Vishnu Vardhan Reddy"
 )
