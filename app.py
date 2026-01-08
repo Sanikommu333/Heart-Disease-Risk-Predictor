@@ -32,7 +32,13 @@ st.markdown(
 # LOAD MODEL
 # ===============================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(BASE_DIR, "model", "xgboost_cardio_model.pkl")
+
+MODEL_PATH = os.path.join(
+    BASE_DIR,
+    "model",
+    "xgboost_cardio_model.pkl"
+)
+
 model = joblib.load(MODEL_PATH)
 
 # ===============================
@@ -63,7 +69,7 @@ def prepare_features(df):
     else:
         df["bp_category"] = 0
 
-    # Lifestyle & metabolic risk
+    # Lifestyle and metabolic risk
     df["lifestyle_risk"] = (
         df["smoke"] * 3 +
         df["alco"] * 2 +
@@ -85,6 +91,7 @@ def prepare_features(df):
         'map_pressure','bp_category','lifestyle_risk',
         'metabolic_risk','combined_risk'
     ]
+
     return df[final_cols]
 
 # ===============================
@@ -97,7 +104,7 @@ st.markdown("---")
 # ===============================
 # SIDEBAR INPUTS
 # ===============================
-st.sidebar.header(" Patient Details")
+st.sidebar.header("Patient Details")
 
 age = st.sidebar.number_input("Age (years)", 18, 100, 50)
 gender = st.sidebar.selectbox("Gender", ["Male", "Female"])
@@ -111,29 +118,30 @@ smoke = st.sidebar.selectbox("Smoking", ["No", "Yes"])
 alco = st.sidebar.selectbox("Alcohol Consumption", ["No", "Yes"])
 active = st.sidebar.selectbox("Physically Active", ["Yes", "No"])
 
-predict = st.sidebar.button(" Assess Risk")
+predict = st.sidebar.button("Assess Risk")
 
 st.sidebar.markdown("---")
-st.sidebar.caption("For screening & educational use only.")
+st.sidebar.caption("For screening and educational use only")
 
 # ===============================
 # TABS
 # ===============================
 tab1, tab2, tab3, tab4 = st.tabs(
-    [" Overview", " Risk Analysis", " Report", " Model Info"]
+    ["Overview", "Risk Analysis", "Report", "Model Info"]
 )
 
 # ===============================
 # OVERVIEW TAB
 # ===============================
 with tab1:
-    st.subheader("About Heart Disease Risk Predictor")
+    st.subheader("About This System")
     st.write(
         """
-        This application estimates cardiovascular disease risk using machine learning
-        and clinically relevant indicators including lifestyle factors.
+        This application estimates cardiovascular disease risk
+        using machine learning and clinically relevant indicators.
 
-        The system is intended for **screening and educational purposes only**.
+        It is intended for screening and educational purposes only
+        and does not replace medical diagnosis.
         """
     )
 
@@ -174,55 +182,35 @@ with tab2:
             "Hypertension"
         )
 
-        # ---- PATIENT-FRIENDLY RISK OVERVIEW ----
-        st.subheader(" Risk Overview")
-
-        st.markdown(
-            f"""
-            <h2 style="color:#0B5394;">
-                Estimated Heart Disease Risk: {risk_percent:.1f}%
-            </h2>
-            """,
-            unsafe_allow_html=True
-        )
+        st.subheader("Risk Overview")
+        st.markdown(f"<h2>Estimated Heart Disease Risk: {risk_percent:.1f}%</h2>", unsafe_allow_html=True)
 
         if risk_prob >= 0.75:
-            st.error(
-                "High Risk: There is a significant likelihood of cardiovascular disease. "
-                "Medical consultation is strongly advised."
-            )
+            st.error("High risk detected. Medical consultation is advised.")
         elif risk_prob >= 0.45:
-            st.warning(
-                "Moderate Risk: Lifestyle modification and regular monitoring are recommended."
-            )
+            st.warning("Moderate risk detected. Lifestyle changes are recommended.")
         else:
-            st.success(
-                "Low Risk: No immediate cardiovascular risk detected. Maintain a healthy lifestyle."
-            )
+            st.success("Low risk detected.")
 
-        # ---- INDICATORS ----
-        st.subheader(" Clinical & Lifestyle Indicators")
+        st.subheader("Clinical Indicators")
         c1, c2, c3 = st.columns(3)
 
         with c1:
-            st.metric("BMI", f"{bmi:.1f}")
-            st.caption(bmi_text)
+            st.metric("BMI", f"{bmi:.1f}", bmi_text)
 
         with c2:
-            st.metric("Blood Pressure", f"{ap_hi}/{ap_lo}")
-            st.caption(bp_text)
+            st.metric("Blood Pressure", f"{ap_hi}/{ap_lo}", bp_text)
 
         with c3:
             st.metric("Lifestyle Risk Score", X["lifestyle_risk"].iloc[0])
 
-        # ---- WHY THIS RISK ----
-        st.subheader(" Why is this risk predicted?")
+        st.subheader("Why this risk?")
         reasons = []
 
         if bp_text != "Normal":
-            reasons.append("Elevated blood pressure increases strain on the heart.")
+            reasons.append("Elevated blood pressure increases cardiac strain.")
         if bmi >= 25:
-            reasons.append("Higher body weight increases cardiovascular workload.")
+            reasons.append("Higher body weight increases heart workload.")
         if smoke == "Yes":
             reasons.append("Smoking damages blood vessels.")
         if active == "No":
@@ -233,25 +221,8 @@ with tab2:
         for r in reasons:
             st.markdown(f"- {r}")
 
-        # ---- WHAT-IF SIMULATION ----
-        st.subheader(" What-If Simulation (Lifestyle Improvement)")
-        new_weight = st.slider("If weight reduced to (kg)", 40, 120, weight)
-        new_sys = st.slider("If systolic BP reduced to (mmHg)", 90, 200, ap_hi)
-
-        sim_df = patient_df.copy()
-        sim_df["weight"] = new_weight
-        sim_df["ap_hi"] = new_sys
-
-        X_sim = prepare_features(sim_df)
-        new_risk = model.predict_proba(X_sim)[0][1]
-
-        st.info(
-            f"If weight becomes **{new_weight} kg** and BP **{new_sys}/{ap_lo}**, "
-            f"estimated risk becomes **{new_risk*100:.1f}%**"
-        )
-
     else:
-        st.info("Enter details and click **Assess Risk**")
+        st.info("Enter patient details and click Assess Risk")
 
 # ===============================
 # REPORT TAB
@@ -263,28 +234,29 @@ with tab3:
             risk_prob,
             "High Risk" if risk_prob >= 0.5 else "Low Risk"
         )
+
         with open(pdf_path, "rb") as f:
             st.download_button(
-                " Download Clinical PDF Report",
+                "Download Clinical PDF Report",
                 f,
                 file_name="CardioPredict_Report.pdf",
                 mime="application/pdf"
             )
     else:
-        st.info("Generate risk assessment first.")
+        st.info("Generate a risk assessment first")
 
 # ===============================
 # MODEL INFO TAB
 # ===============================
 with tab4:
-    st.subheader(" Model Information")
+    st.subheader("Model Information")
     st.write(
         """
-        - **Dataset:** Cardiovascular Disease Dataset (Kaggle)
-        - **Records:** ~70,000
-        - **Model:** XGBoost Classifier
-        - **ROC-AUC:** ~0.80
-        - **Focus:** High recall for screening use
+        Dataset: Cardiovascular Disease Dataset (Kaggle)
+        Records: Approximately 70,000
+        Model: XGBoost Classifier
+        ROC-AUC: Approximately 0.80
+        Focus: High recall for screening
         """
     )
 
@@ -293,6 +265,6 @@ with tab4:
 # ===============================
 st.markdown("---")
 st.caption(
-    " Heart Disease Risk Predictor – AI-based cardiovascular screening tool  \n"
-    "Developed by **S. Vishnu Vardhan Reddy** and **G. Rajesh Kumar**"
+    "AI-based cardiovascular screening tool\n"
+    "Developed by S. Vishnu Vardhan Reddy"
 )
