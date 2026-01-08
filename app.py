@@ -35,7 +35,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 MODEL_PATH = os.path.join(
     BASE_DIR,
-    "model",
     "xgboost_cardio_model.pkl"
 )
 
@@ -268,3 +267,4 @@ st.caption(
     "AI-based cardiovascular screening tool\n"
     "Developed by S. Vishnu Vardhan Reddy"
 )
+
