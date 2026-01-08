@@ -280,5 +280,6 @@ with tab4:
 st.markdown("---")
 st.caption(
     "AI-based cardiovascular screening tool\n"
-    "Developed by S. Vishnu Vardhan Reddy"
+    "Developed by S. Vishnu Vardhan Reddy and G Rajesh Kumar"
 )
+
