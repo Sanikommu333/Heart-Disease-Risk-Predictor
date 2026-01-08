@@ -35,7 +35,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 MODEL_PATH = os.path.join(
     BASE_DIR,
-    "xgboost_cardio_model.pkl"
+    "xgboost_cardio_model.pkl"   # model file placed at root
 )
 
 model = joblib.load(MODEL_PATH)
@@ -98,6 +98,11 @@ def prepare_features(df):
 # ===============================
 st.title("Heart Disease Risk Predictor")
 st.caption("AI-based Cardiovascular Risk Assessment System")
+
+st.info(
+    "Enter patient details, click 'Assess Risk', and scroll down to view the results."
+)
+
 st.markdown("---")
 
 # ===============================
@@ -120,6 +125,7 @@ active = st.sidebar.selectbox("Physically Active", ["Yes", "No"])
 predict = st.sidebar.button("Assess Risk")
 
 st.sidebar.markdown("---")
+st.sidebar.info("After clicking 'Assess Risk', scroll down to view results.")
 st.sidebar.caption("For screening and educational use only")
 
 # ===============================
@@ -136,11 +142,12 @@ with tab1:
     st.subheader("About This System")
     st.write(
         """
-        This application estimates cardiovascular disease risk
-        using machine learning and clinically relevant indicators.
+        This application estimates cardiovascular disease risk using machine learning
+        and clinically relevant indicators such as age, blood pressure, body mass index,
+        and lifestyle habits.
 
-        It is intended for screening and educational purposes only
-        and does not replace medical diagnosis.
+        This tool is intended for screening and educational purposes only
+        and does not replace professional medical diagnosis.
         """
     )
 
@@ -149,23 +156,26 @@ with tab1:
 # ===============================
 with tab2:
     if predict:
-        patient_df = pd.DataFrame([{
-            "age_years": age,
-            "gender": 1 if gender == "Male" else 0,
-            "height": height,
-            "weight": weight,
-            "ap_hi": ap_hi,
-            "ap_lo": ap_lo,
-            "cholesterol": 1,
-            "gluc": 1,
-            "smoke": 1 if smoke == "Yes" else 0,
-            "alco": 1 if alco == "Yes" else 0,
-            "active": 1 if active == "Yes" else 0
-        }])
+        with st.spinner("Analyzing patient data, please wait..."):
+            patient_df = pd.DataFrame([{
+                "age_years": age,
+                "gender": 1 if gender == "Male" else 0,
+                "height": height,
+                "weight": weight,
+                "ap_hi": ap_hi,
+                "ap_lo": ap_lo,
+                "cholesterol": 1,
+                "gluc": 1,
+                "smoke": 1 if smoke == "Yes" else 0,
+                "alco": 1 if alco == "Yes" else 0,
+                "active": 1 if active == "Yes" else 0
+            }])
 
-        X = prepare_features(patient_df)
-        risk_prob = model.predict_proba(X)[0][1]
-        risk_percent = risk_prob * 100
+            X = prepare_features(patient_df)
+            risk_prob = model.predict_proba(X)[0][1]
+            risk_percent = risk_prob * 100
+
+        st.success("Risk analysis completed. Results are shown below.")
 
         bmi = X["bmi"].iloc[0]
         bmi_text = (
@@ -181,21 +191,26 @@ with tab2:
             "Hypertension"
         )
 
-        st.subheader("Risk Overview")
-        st.markdown(f"<h2>Estimated Heart Disease Risk: {risk_percent:.1f}%</h2>", unsafe_allow_html=True)
+        st.markdown("---")
+        st.subheader("Risk Assessment Results")
+
+        st.markdown(
+            f"<h2>Estimated Heart Disease Risk: {risk_percent:.1f}%</h2>",
+            unsafe_allow_html=True
+        )
 
         if risk_prob >= 0.75:
-            st.error("High risk detected. Medical consultation is advised.")
+            st.error("High risk detected. Medical consultation is strongly advised.")
         elif risk_prob >= 0.45:
             st.warning("Moderate risk detected. Lifestyle changes are recommended.")
         else:
-            st.success("Low risk detected.")
+            st.success("Low risk detected. Maintain a healthy lifestyle.")
 
-        st.subheader("Clinical Indicators")
+        st.subheader("Clinical and Lifestyle Indicators")
         c1, c2, c3 = st.columns(3)
 
         with c1:
-            st.metric("BMI", f"{bmi:.1f}", bmi_text)
+            st.metric("Body Mass Index", f"{bmi:.1f}", bmi_text)
 
         with c2:
             st.metric("Blood Pressure", f"{ap_hi}/{ap_lo}", bp_text)
@@ -207,21 +222,21 @@ with tab2:
         reasons = []
 
         if bp_text != "Normal":
-            reasons.append("Elevated blood pressure increases cardiac strain.")
+            reasons.append("Elevated blood pressure increases strain on the heart.")
         if bmi >= 25:
-            reasons.append("Higher body weight increases heart workload.")
+            reasons.append("Higher body weight increases cardiovascular workload.")
         if smoke == "Yes":
             reasons.append("Smoking damages blood vessels.")
         if active == "No":
             reasons.append("Low physical activity reduces heart efficiency.")
         if age >= 55:
-            reasons.append("Age increases cardiovascular vulnerability.")
+            reasons.append("Increasing age raises cardiovascular risk.")
 
         for r in reasons:
             st.markdown(f"- {r}")
 
     else:
-        st.info("Enter patient details and click Assess Risk")
+        st.info("Please enter patient details and click 'Assess Risk'.")
 
 # ===============================
 # REPORT TAB
@@ -242,7 +257,7 @@ with tab3:
                 mime="application/pdf"
             )
     else:
-        st.info("Generate a risk assessment first")
+        st.info("Generate a risk assessment first to download the report.")
 
 # ===============================
 # MODEL INFO TAB
@@ -251,11 +266,11 @@ with tab4:
     st.subheader("Model Information")
     st.write(
         """
-        Dataset: Cardiovascular Disease Dataset (Kaggle)
-        Records: Approximately 70,000
-        Model: XGBoost Classifier
-        ROC-AUC: Approximately 0.80
-        Focus: High recall for screening
+        Dataset: Cardiovascular Disease Dataset (Kaggle)  
+        Total Records: Approximately 70,000  
+        Model Used: XGBoost Classifier  
+        Performance: ROC-AUC approximately 0.80  
+        Design Focus: High recall for screening applications
         """
     )
 
@@ -267,4 +282,3 @@ st.caption(
     "AI-based cardiovascular screening tool\n"
     "Developed by S. Vishnu Vardhan Reddy"
 )
-
