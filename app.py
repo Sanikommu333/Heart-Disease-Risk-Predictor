@@ -254,5 +254,6 @@ with tab4:
 # ===============================
 st.markdown("---")
 st.caption(
-    "Heart Disease Risk Predictor | Developed by S. Vishnu Vardhan Reddy"
+    "Heart Disease Risk Predictor | Developed by S. Vishnu Vardhan Reddy and G. Rajesh Kumar" 
 )
+
