@@ -24,3 +24,5 @@ It does not replace professional medical diagnosis.
 ## Developed By
 - S. Vishnu Vardhan Reddy  
 - G. Rajesh Kumar
+## Live Demo
+https://heart-disease-risk-predictor-vishnu.streamlit.app/
